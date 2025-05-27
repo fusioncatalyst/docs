@@ -24,7 +24,8 @@
           {
             "group": "Essentials",
             "pages": [
-              "essentials/concepts"
+              "essentials/concepts",
+              "essentials/project_file"
             ]
           }
         ]

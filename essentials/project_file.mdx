@@ -1,0 +1,169 @@
+---
+title: 'Project file'
+description: 'This section describes the fcproject.yaml file—the primary import/export format for defining,
+ validating, and migrating an entire Fusioncat project architecture as plain text.'
+icon: 'file'
+---
+
+# Overview
+
+Using `fcproject.yaml`, you can:
+
+* Design your project topology (schemas, messages, servers, resources, apps) in a single file.
+* Validate entity names, uniqueness, and cross-references before provisioning.
+* Import definitions into Fusioncat to automatically create or update artifacts.
+* Export your live project state (with UUIDs) for backup, code generation, or migration.
+* Bundle builds (predefined object sets and versions) into portable, attachable manifests.
+
+
+# File structure
+
+```yaml
+
+# Provision file version
+version: <integer>
+
+# Parameters only used during **export** operations
+export_parameters:
+  include_export_parameters: <boolean>            # Embed this export_parameters block in output
+  servers: <boolean>                              # Include server definitions in output
+  apps: <boolean>                                 # Include application definitions
+  messages: <boolean>                             # Include messages
+  schemas: <boolean>                              # Include schemas
+  include_only_latest_schema_versions: <boolean>   # If true, include only the latest version of each schema
+  include_only_schemas_used_in_messages: <boolean> # If true, include only schemas referenced by messages
+  include_descriptions: <boolean>                  # Include description fields for all entities
+
+
+# Server definitions and their resources
+servers:
+  - name: <unique>
+    type: <string>
+    description: <string>
+    resources: [...]
+    binds: [...]
+
+# Schema definitions (only JSONSchema supported today)
+schemas:
+  - name: <unique>
+    type: jsonschema
+    version: <integer>
+    description: <string>
+    schema: <raw JSON string>      # or example: <JSON instance>
+
+# Message definitions
+messages:
+  - name: <unique>
+    description: <string>
+    schema:
+      name: <schema-name>
+      version: <optional override>
+
+# Application definitions
+apps:
+  - name: <unique>
+    description: <string>
+    receives: [...]                # consumer bindings
+    sends: [...]                   # producer bindings
+
+```
+
+
+# Top-Level Fields
+
+* `version` Integer indicating the fcproject file format version. 
+Incremented when YAML structure or validation rules change.
+* `export_parameters` __(export only)__ Controls which parts of the project are included when exporting.
+ Each boolean flag toggles inclusion of that section in the output YAML.
+    * `include_export_parameters`: if true, the export_parameters block itself appears in the exported file.
+    * `servers / apps / messages / schemas`: include the corresponding top‑level lists.
+    * `include_only_latest_schema_versions`: when true, only the highest-numbered version for each schema is exported.
+    * `include_only_schemas_used_in_messages`: when true, export only schemas referenced by messages.
+    * `include_descriptions`: include description fields for entities throughout the export.
+* `servers` A list of server blocks. Each server must have:
+    * `name`: unique within the project.
+    * `type`: protocol identifier (async+kafka, async+amqp, async+webhook, etc.).
+    * `description`: human-readable label.
+    * `resources`: array of resources (topics, queues, exchanges, endpoints).
+    * `binds` (optional): AMQP-specific bindings linking exchanges to queues.
+    * Resource fields:
+        * `name`: unique under this server.
+        * `mode`: one of read, write, readwrite, or bind.
+        * `type`: resource kind (topic, queue, exchange, endpoint, table).
+        * `description`: free-form text.
+* `schemas` A list of schema definitions. Each schema block includes:
+    * `name`: unique identifier.
+    * `type`: currently only jsonschema.
+    * `version`: sequential integer, starting at 1.
+    * `description`: optional summary.
+    * `schema`: the JSONSchema document as a string, or
+    * `example`: a JSON instance conforming to the schema.
+* `messages` A list of message definitions. Each message has:
+    * `name`: unique within project.
+    * `description`: what the message conveys.
+    * `schema`: a nested block referencing
+        * `name`: schema name
+        * `version`: optional (defaults to the latest version).
+* `apps` A list of application definitions. Each application block contains:
+    * `name`: unique identifier.
+    * `description`: application purpose.
+    * `receives` (optional): array of [ message, resource ] pairs the app consumes.
+    * `sends` (optional): array of [ message, resource ] pairs the app produces.
+        
+
+# Key Rules & Conventions
+
+* Uniqueness: All `name` fields (servers, resources, schemas, messages, apps)
+ must be unique within a single project. They can contan latin alphabet leters, digits and _ symbol.
+* UUID Assignment:
+    * Imported definitions lack UUIDs.
+    * Exported or live entities always include a uuid property.
+    * Presence of a UUID means the resource already exists in its target server.
+* Scoped Definitions:
+    * All resources, schemas, messages, and apps defined in fcproject.yaml must belong to the same project.
+
+ 
+# Example snippet
+
+```yaml
+version: 1
+
+servers:
+  - name: mainkafka
+    type: async+kafka
+    description: "Primary Kafka cluster"
+    resources:
+      - name: emails
+        mode: readwrite
+        type: topic
+        description: "Email message topic"
+
+schemas:
+  - name: email_schema
+    type: jsonschema
+    version: 1
+    description: "Email payload format"
+    schema: >
+      {
+        "type": "object",
+        "properties": {
+          "to":    { "type": "string" },
+          "body":  { "type": "string" }
+        },
+        "required": ["to", "body"]
+      }
+
+messages:
+  - name: send_email
+    description: "Trigger email dispatch"
+    schema:
+      name: email_schema
+
+apps:
+  - name: mailer
+    description: "Service that sends emails"
+    receives:
+      - message: send_email
+        resource: async+kafka://mainkafka@readwrite/topic/emails
+
+```

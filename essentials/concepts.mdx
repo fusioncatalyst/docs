@@ -1,0 +1,109 @@
+---
+title: 'Concepts'
+description: 'Definitions of the key components and entities used in Fusioncat'
+icon: 'lightbulb'
+---
+
+This glossary defines the key terms you’ll encounter when working with Fusioncat.
+ Use it as a quick reference to understand how schemas, messages, servers,
+  resources, applications, projects, and workspaces fit together in logical order
+   from the smallest building blocks to the containers that encapsulate them.
+
+
+# Overview
+
+Overview
+Below is the list of glossary entries in the order they build on each other:
+
+* Data schema
+* Message
+* Server
+* Resources
+* Application
+* Consumer
+* Producer
+* Project
+* Workspaces
+
+
+# Glossary
+
+## Data schema
+A formal definition of the structure and data types within a payload. 
+Fusioncat is designed to support three schema technologies—JSONSchema,
+ Avro, and Protobuf—but currently only **JSONSchemas** are implemented.
+
+**Versioning**.<br/>
+Every change to a schema yields a new version, numbered sequentially starting at 1.
+
+
+## Message
+A communication asset that carries data according to a particular schema version. Each message includes:
+
+* A name and human-readable description.
+* A reference to a specific schema and its version.
+* Its own version number for tracking changes to the message metadata or payload structure.
+
+**Note**: One schema can be used by multiple messages.
+
+
+## Server
+
+Software or infrastructure that routes messages between producers and consumers. Examples include:
+
+* Kafka brokers
+* AMQP (RabbitMQ) servers
+* MQTT brokers
+* Simple setups using database tables or webhooks
+* A server can host multiple resources.
+
+
+## Resources
+
+Access points through which messages flow inside a server. Depending on server type, a resource might be one of:
+
+* Kafka topic
+* AMQP exchange or queue
+* MQTT topic
+* Database table
+* Webhook endpoint
+
+
+Each resource:
+
+* Belongs to exactly one server.
+* Has one of four modes: `read`, `write`, `readwrite`, or `bind`.
+* The bind mode (AMQP-specific) links exchanges to queues.
+* Uses a naming convention that fully qualifies its server, mode, and identifier, 
+for example: `async+amqp://mainrmq@read/queue/paymentqueue`
+
+
+## Application
+
+A computer program built on the Fusioncat stack that receives and/or sends messages.
+
+* Consumer
+    * The component responsible for receiving incoming messages.
+    * Defined by a list of message-and-resource pairs from which it reads.
+
+
+* Producer
+    * The component responsible for sending messages.
+    * Defined by a list of message-and-resource pairs to which it writes.
+
+
+## Project
+
+A self-contained package that stores all schemas, messages, servers, resources, and applications.
+
+* Everything in Fusioncat lives in a project.
+* In future releases, projects will be able to reference artifacts in other projects.
+
+## Workspaces
+
+Top-level containers for organizing multiple projects and teams.
+
+* A workspace typically includes several engineers.
+* Engineers have access controls scoped to the projects within their workspace.
+
+

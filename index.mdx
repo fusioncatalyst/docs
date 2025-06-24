@@ -1,5 +1,5 @@
 ---
-title: FusionCatalyst Documentation
+title: Fusioncat: what is it?
 description: Build event-driven applications with schema-first development
 ---
 
@@ -14,106 +14,183 @@ description: Build event-driven applications with schema-first development
   alt="Hero Dark"
 />
 
-## Welcome to FusionCatalyst
+<Warning>
+Fusioncat is currently in its alpha stage. The main API server is located at:
+https://api.staging.fusioncatalyst.io/
 
-FusionCatalyst is a comprehensive platform for building event-driven, schema-first applications. With the Paw CLI, you can manage projects, define schemas, and generate type-safe code across multiple programming languages.
+Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+## What is Fusioncat?
+
+Fusioncat is a schema-first development platform that simplifies building event-driven and asynchronous applications. It provides a unified approach to managing complex distributed systems by centralizing schema definitions, versioning, and code generation across multiple programming languages.
+
+Think of Fusioncat as the "single source of truth" for all your API contracts, message formats, and event definitions - ensuring consistency across your entire technology stack.
+
+## Why Async Communication Matters
+
+In modern software architecture, asynchronous communication has become critical for building scalable, resilient applications. Here's why:
+
+### 🚀 **Scalability**
+Async systems can handle thousands of concurrent operations without blocking, allowing your applications to scale horizontally with demand.
+
+### 🛡️ **Resilience**
+When services communicate asynchronously, temporary failures don't cascade through your system. Messages can be queued and processed when services recover.
+
+### ⚡ **Performance**
+Non-blocking operations mean your services can process multiple requests simultaneously, dramatically improving throughput and reducing latency.
+
+### 🔄 **Decoupling**
+Services don't need to know about each other's implementation details - they only need to understand the message contracts, enabling independent deployment and scaling.
+
+## The Fusioncat Advantage
+
+### 1. **Schema-First Development**
+Define your data structures once, and Fusioncat ensures consistency across all services, languages, and teams. No more schema drift or version mismatches.
+
+### 2. **Multi-Protocol Support**
+Whether you're using Kafka for event streaming, RabbitMQ for task queues, or webhooks for external integrations, Fusioncat provides a unified interface.
+
+### 3. **Automatic Code Generation**
+Stop writing boilerplate code. Fusioncat generates type-safe models, serializers, and client libraries in TypeScript, Python, Java, and Go.
+
+### 4. **Version Management**
+Schema evolution is inevitable. Fusioncat's built-in versioning ensures backward compatibility while allowing your APIs to evolve.
+
+## Real-World Use Cases
 
 <CardGroup cols={2}>
   <Card
-    title="Quick Start"
-    icon="rocket"
+    title="E-Commerce Platform"
+    icon="shopping-cart"
+  >
+    Handle order processing, inventory updates, and payment notifications across multiple services without tight coupling
+  </Card>
+  <Card
+    title="Financial Services"
+    icon="building-columns"
+  >
+    Process transactions, risk assessments, and compliance checks asynchronously for better performance and reliability
+  </Card>
+  <Card
+    title="IoT Systems"
+    icon="microchip"
+  >
+    Manage millions of device events, telemetry data, and command dispatching with event-driven architecture
+  </Card>
+  <Card
+    title="Media Streaming"
+    icon="video"
+  >
+    Coordinate video processing, content delivery, and user analytics through message-driven workflows
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CardGroup cols={2}>
+  <Card
+    title="Install Paw CLI"
+    icon="download"
     href="/quickstart"
   >
-    Get up and running with FusionCatalyst in minutes
+    Get started in minutes with our command-line interface
   </Card>
   <Card
     title="CLI Reference"
     icon="terminal"
     href="/cli-reference"
   >
-    Complete reference for all Paw CLI commands
+    Explore all available commands and options
   </Card>
 </CardGroup>
 
-## Key Features
+### Your First Fusioncat Project
+
+```bash
+# 1. Install the Paw CLI
+curl -L https://github.com/fusioncatltd/paw/releases/latest/download/paw_$(uname -s)_$(uname -m).tar.gz | tar xz
+sudo mv paw /usr/local/bin/
+
+# 2. Initialize and authenticate
+paw init-settings-file --server https://api.staging.fusioncatalyst.io --language go
+paw auth signup --email your@email.com --password yourpassword
+export FC_ACCESS_TOKEN="your-auth-token"
+
+# 3. Create your first project
+paw projects new --name "My Event-Driven App" --belongs-to user
+```
+
+## Core Concepts
 
 <CardGroup cols={2}>
   <Card
-    title="Schema-First Development"
+    title="Projects & Workspaces"
+    icon="folder"
+    href="/cli-reference/projects"
+  >
+    Organize your schemas and applications with projects and team workspaces
+  </Card>
+  <Card
+    title="Schemas"
     icon="diagram-project"
     href="/cli-reference/schemas"
   >
-    Define your data structures once, use them everywhere with full versioning support
+    Define your data structures with JSON Schema and automatic versioning
   </Card>
   <Card
-    title="Multi-Language Code Generation"
+    title="Messages"
+    icon="envelope"
+    href="/cli-reference/messages"
+  >
+    Create concrete message types from schemas for events, commands, and APIs
+  </Card>
+  <Card
+    title="Code Generation"
     icon="code"
     href="/cli-reference/codegen"
   >
-    Generate type-safe code in TypeScript, Python, Java, and Go
-  </Card>
-  <Card
-    title="Event-Driven Architecture"
-    icon="bolt"
-    href="/cli-reference/servers"
-  >
-    Build with Kafka, AMQP, and webhooks using a unified interface
-  </Card>
-  <Card
-    title="Team Collaboration"
-    icon="users"
-    href="/cli-reference/workspaces"
-  >
-    Work together with workspaces and shared projects
+    Generate type-safe code in multiple languages from your definitions
   </Card>
 </CardGroup>
 
-## Getting Started
+## Architecture Patterns
 
-### 1. Install the Paw CLI
+Fusioncat supports modern architectural patterns out of the box:
 
-```bash
-# Download the latest release
-curl -L https://github.com/fusioncatalyst/paw/releases/latest/download/paw_$(uname -s)_$(uname -m).tar.gz | tar xz
+### Event-Driven Architecture
+- **Event Sourcing**: Capture all changes as a sequence of events
+- **CQRS**: Separate read and write models for optimal performance
+- **Saga Orchestration**: Coordinate complex workflows across services
 
-# Move to your PATH
-sudo mv paw /usr/local/bin/
-```
+### Microservices Communication
+- **Async APIs**: Define contracts for service-to-service communication
+- **Message Brokers**: Integrate with Kafka, RabbitMQ, and more
+- **API Gateway**: Generate unified API definitions
 
-### 2. Initialize Your Project
+### Real-Time Systems
+- **Event Streaming**: Process high-volume data streams
+- **Webhooks**: Integrate with external services
+- **WebSocket Support**: Build real-time user interfaces
 
-```bash
-# Create settings file
-paw init-settings-file --language typescript
+## Why Choose Fusioncat?
 
-# Authenticate
-paw auth signin --email your@email.com --password yourpassword --save-token
+### For Developers
+- 🎯 **Type Safety**: Never worry about message format mismatches
+- 🔄 **DRY Principle**: Define once, use everywhere
+- 🛠️ **Developer Experience**: Modern CLI with intuitive commands
 
-# Create a new project
-paw projects new --name "My API" --belongs-to user
-```
+### For Teams
+- 👥 **Collaboration**: Shared workspaces and projects
+- 📊 **Governance**: Centralized schema management
+- 🔍 **Visibility**: Track schema usage and dependencies
 
-### 3. Define Your Schemas
+### For Enterprises
+- 🏢 **Scalability**: Handle millions of messages per second
+- 🔒 **Security**: Built-in authentication and access control
+- 📈 **Evolution**: Manage API lifecycle with versioning
 
-```bash
-# Create a schema
-paw schemas new --project-id "your-project-id" \
-  --name "User" \
-  --type jsonschema \
-  --schema-file ./schemas/user.json
-```
-
-### 4. Generate Code
-
-```bash
-# Create an app
-paw apps new --project-id "your-project-id" --name "Backend API"
-
-# Generate TypeScript code
-paw codegen app --app-id "your-app-id" --language typescript
-```
-
-## Learn More
+## Next Steps
 
 <CardGroup cols={2}>
   <Card
@@ -121,27 +198,40 @@ paw codegen app --app-id "your-app-id" --language typescript
     icon="lightbulb"
     href="/essentials/concepts"
   >
-    Understand the core concepts of FusionCatalyst
+    Understand the core concepts of Fusioncat
   </Card>
   <Card
-    title="Project Structure"
-    icon="folder-tree"
-    href="/essentials/project_file"
+    title="Tutorials"
+    icon="graduation-cap"
+    href="/quickstart"
   >
-    Learn how to organize your FusionCatalyst projects
+    Follow step-by-step guides to build your first app
   </Card>
   <Card
     title="API Reference"
     icon="book"
     href="/api-reference/introduction"
   >
-    Explore the FusionCatalyst API
+    Explore the Fusioncat API in detail
   </Card>
   <Card
-    title="Development Guide"
-    icon="code-branch"
+    title="Best Practices"
+    icon="star"
     href="/development"
   >
-    Best practices for development with FusionCatalyst
+    Learn patterns for production-ready applications
   </Card>
 </CardGroup>
+
+## Join the Community
+
+Building the future of event-driven development requires a community. Join us:
+
+- 🌟 [Star us on GitHub](https://github.com/fusioncatltd)
+- 💬 [Join our Discord](https://discord.gg/fusioncat)
+- 🐦 [Follow on Twitter](https://twitter.com/fusioncat)
+- 📧 [Contact Support](mailto:support@fusioncatalyst.io)
+
+---
+
+*Fusioncat - zero-chaos async services management.*

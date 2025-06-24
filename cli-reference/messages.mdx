@@ -1,0 +1,219 @@
+---
+title: Message Management
+description: Create and manage messages based on schemas
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Message Management Commands
+
+The `paw messages` commands allow you to create and manage messages that are based on your schema definitions.
+
+## Commands
+
+### messages list
+
+List all messages in a project.
+
+```bash
+paw messages list --project-id <id>
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+
+#### Examples
+
+```bash
+# List all messages
+paw messages list --project-id "project-uuid"
+```
+
+### messages new
+
+Create a new message based on a schema.
+
+```bash
+paw messages new --project-id <id> --name <name> --schema-id <id> --schema-version <version> [--description <description>]
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+- `--name` (required): Name of the message
+- `--schema-id` (required): The ID of the schema this message is based on
+- `--schema-version` (required): The version of the schema to use
+- `--description`: Description of the message
+
+#### Examples
+
+```bash
+# Create a message
+paw messages new --project-id "project-uuid" --name "UserCreatedEvent" --schema-id "user-schema-uuid" --schema-version "v1.0.0"
+
+# Create with description
+paw messages new --project-id "project-uuid" --name "OrderShippedNotification" --schema-id "order-schema-uuid" --schema-version "v2.1.0" --description "Sent when order ships"
+```
+
+## Understanding Messages
+
+### What is a Message?
+
+A message is a concrete implementation of a schema used for:
+- Event definitions in event-driven architectures
+- API request/response definitions
+- Data transfer objects (DTOs)
+- Queue message formats
+
+### Message vs Schema
+
+- **Schema**: The abstract data structure definition
+- **Message**: A specific use case of that schema
+
+Example:
+- Schema: `User` (defines user data structure)
+- Messages: `UserCreatedEvent`, `UserUpdatedEvent`, `UserProfileResponse`
+
+### Message Versioning
+
+Messages are tied to specific schema versions:
+- When a schema updates, existing messages continue using their version
+- Create new messages for new schema versions
+- Allows gradual migration
+
+## Event-Driven Architecture
+
+Messages are particularly useful for event-driven systems:
+
+```bash
+# Create event schemas
+paw schemas new --project-id "project-uuid" --name "OrderEvent" --type jsonschema --schema-file ./order-event.json
+
+# Create specific event messages
+paw messages new --project-id "project-uuid" --name "OrderCreated" --schema-id "order-event-uuid" --schema-version "v1.0.0"
+paw messages new --project-id "project-uuid" --name "OrderShipped" --schema-id "order-event-uuid" --schema-version "v1.0.0"
+paw messages new --project-id "project-uuid" --name "OrderDelivered" --schema-id "order-event-uuid" --schema-version "v1.0.0"
+paw messages new --project-id "project-uuid" --name "OrderCancelled" --schema-id "order-event-uuid" --schema-version "v1.0.0"
+```
+
+## Best Practices
+
+### Naming Conventions
+
+1. **Events**: Use past tense - `UserCreated`, `OrderShipped`
+2. **Commands**: Use imperative - `CreateUser`, `ShipOrder`
+3. **Requests/Responses**: Be descriptive - `GetUserRequest`, `UserProfileResponse`
+
+### Message Organization
+
+Group related messages:
+```
+User Domain:
+- UserCreatedEvent
+- UserUpdatedEvent
+- UserDeletedEvent
+- GetUserRequest
+- UserResponse
+
+Order Domain:
+- OrderPlacedEvent
+- OrderShippedEvent
+- OrderDeliveredEvent
+- CreateOrderCommand
+- OrderStatusResponse
+```
+
+### Schema Reuse
+
+Multiple messages can use the same schema:
+```bash
+# One schema, multiple messages
+paw messages new --project-id "pid" --name "CreateUserRequest" --schema-id "user-schema" --schema-version "v1"
+paw messages new --project-id "pid" --name "UpdateUserRequest" --schema-id "user-schema" --schema-version "v1"
+paw messages new --project-id "pid" --name "UserResponse" --schema-id "user-schema" --schema-version "v1"
+```
+
+## Examples
+
+### API Message Definitions
+
+```bash
+# Request/Response pairs
+paw messages new --project-id "project-uuid" \
+  --name "CreateProductRequest" \
+  --schema-id "product-schema-uuid" \
+  --schema-version "v1.0.0" \
+  --description "API request to create a new product"
+
+paw messages new --project-id "project-uuid" \
+  --name "ProductResponse" \
+  --schema-id "product-schema-uuid" \
+  --schema-version "v1.0.0" \
+  --description "API response containing product data"
+
+paw messages new --project-id "project-uuid" \
+  --name "ProductListResponse" \
+  --schema-id "product-list-schema-uuid" \
+  --schema-version "v1.0.0" \
+  --description "API response for product listings"
+```
+
+### Event Sourcing
+
+```bash
+# Define events for an aggregate
+paw messages new --project-id "project-uuid" --name "AccountOpened" --schema-id "account-event-uuid" --schema-version "v1"
+paw messages new --project-id "project-uuid" --name "MoneyDeposited" --schema-id "transaction-event-uuid" --schema-version "v1"
+paw messages new --project-id "project-uuid" --name "MoneyWithdrawn" --schema-id "transaction-event-uuid" --schema-version "v1"
+paw messages new --project-id "project-uuid" --name "AccountClosed" --schema-id "account-event-uuid" --schema-version "v1"
+```
+
+### Microservices Communication
+
+```bash
+# Service A publishes
+paw messages new --project-id "project-uuid" \
+  --name "InventoryUpdatedEvent" \
+  --schema-id "inventory-schema-uuid" \
+  --schema-version "v2.0.0"
+
+# Service B consumes and publishes
+paw messages new --project-id "project-uuid" \
+  --name "PriceRecalculationCommand" \
+  --schema-id "pricing-command-uuid" \
+  --schema-version "v1.0.0"
+
+# Service C responds
+paw messages new --project-id "project-uuid" \
+  --name "PriceUpdatedEvent" \
+  --schema-id "price-event-uuid" \
+  --schema-version "v1.0.0"
+```
+
+## Working with Servers and Resources
+
+Messages are often used with servers and resources:
+
+```bash
+# Create a Kafka server
+paw servers new --project-id "project-uuid" --name "Event Bus" --type "async+kafka" --description "Main event bus"
+
+# Create topics for messages
+paw resources new --server-id "server-uuid" --name "user-events" --type topic --mode write
+paw resources new --server-id "server-uuid" --name "order-events" --type topic --mode readwrite
+
+# Messages can now be published to these topics
+```
+
+## Related Commands
+
+- [Schemas](./schemas) - Define data structures for messages
+- [Servers](./servers) - Create servers for message transport
+- [Resources](./resources) - Define topics/queues for messages
+- [Code Generation](./codegen) - Generate message handling code

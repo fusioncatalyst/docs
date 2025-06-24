@@ -1,0 +1,376 @@
+---
+title: Code Generation
+description: Generate code from your project definitions
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+
+# Code Generation Commands
+
+The `paw codegen` commands allow you to generate code in multiple programming languages from your FusionCatalyst project definitions.
+
+## Commands
+
+### codegen app
+
+Generate code for a specific application.
+
+```bash
+paw codegen app --app-id <id> [--language <language>]
+```
+
+#### Options
+
+<Warning>
+    Currently only Golang codegeneration is properly implemented and tested.
+</Warning>
+
+
+- `--app-id` (required): The ID of the application to generate code for
+- `--language`: Target programming language (overrides settings file)
+  - `typescript`
+  - `python`
+  - `java`
+  - `go`
+
+#### Examples
+
+```bash
+# Generate using default language from settings
+paw codegen app --app-id "app-uuid"
+
+# Generate TypeScript code
+paw codegen app --app-id "app-uuid" --language typescript
+
+# Generate Python code
+paw codegen app --app-id "app-uuid" --language python
+```
+
+## Supported Languages
+
+### TypeScript
+- **Use cases**: Node.js backends, React/Angular/Vue frontends
+- **Features**: Full type safety, interfaces, async/await
+- **Output**: TypeScript definitions and helper functions
+
+### Python
+- **Use cases**: Django/FastAPI backends, data processing
+- **Features**: Type hints, dataclasses, async support
+- **Output**: Python classes and type definitions
+
+### Java
+- **Use cases**: Spring Boot, enterprise applications
+- **Features**: POJOs, builders, validation annotations
+- **Output**: Java classes with getters/setters
+
+### Go
+- **Use cases**: Microservices, high-performance backends
+- **Features**: Structs, interfaces, channels
+- **Output**: Go structs and interfaces
+
+## Generated Code Structure
+
+### TypeScript Example
+
+For a User schema:
+```typescript
+// Generated types
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
+
+// Generated validators
+export function validateUser(data: unknown): User {
+  // Validation logic
+}
+
+// Generated API client
+export class UserAPI {
+  async getUser(id: string): Promise<User> {
+    // API call implementation
+  }
+}
+
+// Generated message handlers
+export const userEvents = {
+  UserCreated: {
+    publish: async (event: UserCreatedEvent) => {
+      // Publish logic
+    },
+    subscribe: async (handler: (event: UserCreatedEvent) => Promise<void>) => {
+      // Subscribe logic
+    }
+  }
+};
+```
+
+### Python Example
+
+```python
+# Generated types
+from dataclasses import dataclass
+from typing import Optional
+from datetime import datetime
+
+@dataclass
+class User:
+    id: str
+    email: str
+    name: str
+    created_at: datetime
+
+# Generated validators
+def validate_user(data: dict) -> User:
+    # Validation logic
+    pass
+
+# Generated API client
+class UserAPI:
+    async def get_user(self, id: str) -> User:
+        # API call implementation
+        pass
+
+# Generated message handlers
+class UserEvents:
+    @staticmethod
+    async def publish_user_created(event: UserCreatedEvent):
+        # Publish logic
+        pass
+```
+
+## Configuration
+
+### Language Settings
+
+Set default language in settings file:
+```bash
+paw init-settings-file --language typescript
+```
+
+Or in `fcsettings.json`:
+```yaml
+syntax_version: 1
+server: https://api.fusioncat.dev
+code_generation:
+    output_folder: generated
+    language: go
+    class_suffix: FCModel
+```
+
+### Output Directory
+
+Generated code is placed in:
+- `./fusioncant/` - Default output directory
+
+```
+generated/
+├── c04beaff-870e-44ba-8dce-793715459e9f.go
+```
+
+## Code Generation Workflow
+
+### 1. Initial Generation
+
+```bash
+# Create project and schemas
+paw projects new --name "My API" --belongs-to user
+paw schemas new --project-id "proj-id" --name "User" --type jsonschema --schema-file user.json
+
+# Create app
+paw apps new --project-id "proj-id" --name "Backend API"
+
+# Generate initial code
+paw codegen app --app-id "app-id" --language typescript
+```
+
+### 2. Development
+
+1. Generated code provides the foundation
+2. Add business logic on top
+3. Don't modify generated files directly
+
+### 3. Schema Updates
+
+```bash
+# Update schema
+paw schemas update --schema-id "schema-id" --schema-file user-v2.json
+
+# Regenerate code
+paw codegen app --app-id "app-id"
+
+# Generated code now includes new fields
+```
+
+## Integration Patterns
+
+### Separate Generated Code
+
+Keep generated code separate from business logic:
+
+```typescript
+// generated/types/user.ts (DO NOT EDIT)
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+// src/services/user.service.ts (Your code)
+import { User } from '../generated/types/user';
+
+export class UserService {
+  async createUser(data: Omit<User, 'id'>): Promise<User> {
+    // Your business logic
+  }
+}
+```
+
+### Extend Generated Classes
+
+```python
+# generated/models/user.py (DO NOT EDIT)
+@dataclass
+class User:
+    id: str
+    email: str
+    name: str
+
+# src/models/user_extended.py (Your code)
+from generated.models.user import User
+
+class ExtendedUser(User):
+    def get_display_name(self) -> str:
+        return f"{self.name} ({self.email})"
+```
+
+## Best Practices
+
+### Version Control
+
+1. **Commit generated code**: Include in version control
+2. **Mark as generated**: Add headers indicating files are generated
+3. **Regenerate in CI**: Ensure consistency
+
+### Continuous Generation
+
+```bash
+# In your build script
+#!/bin/bash
+echo "Regenerating code..."
+paw codegen app --app-id "$APP_ID"
+
+echo "Running tests..."
+npm test
+
+echo "Building application..."
+npm run build
+```
+
+### Multiple Apps
+
+Generate different code for different apps:
+
+```bash
+# Frontend app - TypeScript
+paw codegen app --app-id "frontend-id" --language typescript
+
+# Backend app - Python
+paw codegen app --app-id "backend-id" --language python
+
+# Mobile app - TypeScript (React Native)
+paw codegen app --app-id "mobile-id" --language typescript
+```
+
+## Examples
+
+### Full Stack Application
+
+```bash
+# Create schemas
+paw schemas new --project-id "proj" --name "User" --type jsonschema --schema-file schemas/user.json
+paw schemas new --project-id "proj" --name "Product" --type jsonschema --schema-file schemas/product.json
+
+# Create apps
+paw apps new --project-id "proj" --name "React Frontend"
+paw apps new --project-id "proj" --name "Node.js Backend"
+
+# Generate TypeScript for both
+paw codegen app --app-id "frontend-id" --language typescript
+paw codegen app --app-id "backend-id" --language typescript
+
+# Frontend uses generated types
+# Backend uses generated types + API handlers
+```
+
+### Microservices
+
+```bash
+# Different languages for different services
+paw codegen app --app-id "user-service" --language go
+paw codegen app --app-id "order-service" --language java
+paw codegen app --app-id "notification-service" --language python
+paw codegen app --app-id "analytics-service" --language typescript
+```
+
+### Event-Driven System
+
+```bash
+# Generate event handlers
+paw codegen app --app-id "event-producer" --language python
+paw codegen app --app-id "event-consumer" --language typescript
+
+# Generated code includes:
+# - Event type definitions
+# - Serialization/deserialization
+# - Publisher/subscriber interfaces
+# - Topic/queue configurations
+```
+
+## Troubleshooting
+
+### Missing Dependencies
+
+Generated code may require additional packages:
+
+```bash
+# TypeScript
+npm install ajv uuid
+
+# Python
+pip install pydantic python-dateutil
+
+# Java
+# Add to pom.xml or build.gradle
+
+# Go
+go get github.com/go-playground/validator/v10
+```
+
+### Schema Compatibility
+
+When updating schemas:
+1. Consider backward compatibility
+2. Use schema versioning
+3. Update dependent apps gradually
+
+### Code Conflicts
+
+If regeneration causes conflicts:
+1. Review schema changes
+2. Check for breaking changes
+3. Update business logic accordingly
+
+## Related Commands
+
+- [Apps](./apps) - Create applications to generate code for
+- [Schemas](./schemas) - Define schemas for code generation
+- [Projects](./projects) - Manage projects containing apps

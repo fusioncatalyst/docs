@@ -1,0 +1,175 @@
+---
+title: Project Management
+description: Create and manage Fusioncat projects
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Project Management Commands
+
+The `paw projects` commands allow you to create, list, and manage Fusioncat projects.
+
+## Commands
+
+### projects list
+
+List all projects accessible to you.
+
+```bash
+paw projects list
+```
+
+#### Examples
+
+```bash
+# List all projects
+paw projects list
+```
+
+### projects new
+
+Create a new project.
+
+```bash
+paw projects new --name <name> --belongs-to <user|workspace> [options]
+```
+
+#### Options
+
+- `--name` (required): Project name
+- `--belongs-to` (required): Whether the project belongs to `user` or `workspace`
+- `--workspace-id`: If project belongs to a workspace, specify the workspace ID
+- `--private`: Make the project private (default: false)
+- `--description`: Project description
+
+#### Examples
+
+```bash
+# Create a user project
+paw projects new --name "My API Project" --belongs-to user --description "Main API definitions"
+
+# Create a private user project
+paw projects new --name "Internal Tools" --belongs-to user --private
+
+# Create a workspace project
+paw projects new --name "Team Project" --belongs-to workspace --workspace-id "workspace-uuid"
+```
+
+### projects import
+
+Import a project from a definition file.
+
+```bash
+paw projects import --file <path> --project-id <id>
+```
+
+#### Options
+
+- `--file` (required): Path to the project definition file
+- `--project-id` (required): The ID of the project to import into
+
+#### Examples
+
+```bash
+# Import project definition
+paw projects import --file ./project-export.json --project-id "project-uuid"
+```
+
+### projects generate
+
+Generate code for a project (legacy command - use `codegen app` instead).
+
+```bash
+paw projects generate --app-id <id> --project-id <id>
+```
+
+#### Options
+
+- `--app-id` (required): The ID of the application
+- `--project-id` (required): The ID of the project
+
+## Working with Projects
+
+### Project Structure
+
+A Fusioncat project contains:
+- **Apps**: Applications that use your schemas
+- **Schemas**: Data structure definitions with versioning
+- **Messages**: Messages based on schemas
+- **Servers**: Event-driven server configurations
+- **Resources**: Server resources (topics, queues, endpoints)
+
+### Project Settings
+
+After creating a project, you can connect it to your local settings file:
+
+```bash
+# Initialize settings with project ID
+paw init-settings-file --working-with-project "project-uuid"
+```
+
+This creates a `.paw-settings.json` file that links your local directory to the project.
+
+### Project Ownership
+
+Projects can belong to:
+- **User**: Personal projects owned by your account
+- **Workspace**: Shared projects owned by a workspace
+
+## Best Practices
+
+### Naming Conventions
+
+- Use descriptive names for projects
+- Include the purpose in the project name
+- For workspace projects, consider prefixing with team/department
+
+### Organization
+
+1. **One project per domain**: Keep related schemas and apps together
+2. **Use workspaces for teams**: Share projects across team members
+3. **Private vs Public**: Make internal projects private
+
+### Project Lifecycle
+
+1. **Create**: Start with a clear project structure
+2. **Define**: Add schemas and messages
+3. **Implement**: Create apps and generate code
+4. **Version**: Use schema versioning for changes
+5. **Export/Import**: Backup and share project definitions
+
+## Examples
+
+### Complete Project Setup
+
+```bash
+# 1. Create a new project
+paw projects new --name "E-commerce API" --belongs-to user
+
+# 2. List projects to get the ID
+paw projects list
+
+# 3. Initialize local settings
+paw init-settings-file --working-with-project "project-uuid"
+
+# 4. Create a schema
+paw schemas new --project-id "project-uuid" --name "Product" --type jsonschema --schema-file ./schemas/product.json
+
+# 5. Create an app
+paw apps new --project-id "project-uuid" --name "Frontend App" --description "React frontend"
+
+# 6. Generate code
+paw codegen app --app-id "app-uuid" --language typescript
+```
+
+## Related Commands
+
+- [Workspaces](./workspaces) - Manage workspaces for team collaboration
+- [Apps](./apps) - Create applications within projects
+- [Schemas](./schemas) - Define data structures
+- [Code Generation](./codegen) - Generate code from projects

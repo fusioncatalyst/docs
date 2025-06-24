@@ -1,0 +1,79 @@
+---
+title: CLI Reference
+description: Complete reference for the Paw CLI
+---
+
+<Warning>
+Fusioncat is currently in its alpha stage. The main API server is located at:
+https://api.staging.fusioncatalyst.io/
+
+Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+
+# Paw CLI Reference
+
+Paw is the official Fusioncat CLI that helps you manage projects, schemas, applications, and generate code across multiple programming languages.
+
+## Installation
+
+```bash
+# Download the latest release
+curl -L https://github.com/fusioncatltd/paw/releases/latest/download/paw_$(uname -s)_$(uname -m).tar.gz | tar xz
+
+# Move to your PATH
+sudo mv paw /usr/local/bin/
+
+# Verify installation
+paw --version
+```
+
+## Getting Started
+
+1. **Initialize your settings file**
+   ```bash
+   paw init-settings-file --server https://api.fusioncat.dev --language typescript
+   ```
+
+2. **Authenticate**
+   ```bash
+   paw auth signin --email your@email.com --password yourpassword
+   ```
+
+3. **Create your first project**
+   ```bash
+   paw projects new --name "My Project" --belongs-to user
+   ```
+
+## Global Options
+
+- `--help, -h`: Show help
+- `--version, -v`: Print the version
+
+## Environment Variables
+
+- `FC_ACCESS_TOKEN`: Authentication token for API access
+- `FC_SERVER_URL`: Override the default server URL
+- `FC_LANGUAGE`: Default language for code generation
+
+## Configuration
+
+Paw uses a settings file (`fcsettings.yaml`) to store project-specific configuration. This file is created when you run `paw init-settings-file`.
+
+### Settings File Structure
+
+```yaml
+syntax_version: 1
+server: https://api.fusioncat.dev
+code_generation:
+    output_folder: generated
+    language: go
+    class_suffix: FCModel
+```
+
+## Next Steps
+
+- [Authentication](./authentication) - Learn how to authenticate with the Fusioncat API
+- [Project Management](./projects) - Create and manage projects
+- [Schema Management](./schemas) - Work with schemas and versions
+- [Code Generation](./codegen) - Generate code from your project definitions

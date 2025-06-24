@@ -1,0 +1,236 @@
+---
+title: Settings Initialization
+description: Initialize and configure your Paw CLI settings
+---
+
+<Warning>
+Fusioncat is currently in its alpha stage. The main API server is located at:
+https://api.staging.fusioncatalyst.io/
+
+Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Settings Initialization
+
+The `paw init-settings-file` command creates a local configuration file for your FusionCatalyst project.
+
+## Command
+
+```bash
+paw init-settings-file [options]
+```
+
+### Options
+
+- `--server`: Server URL (default: https://api.fusioncat.dev)
+- `--language`: Default code generation language
+  - `typescript`
+  - `python`
+  - `java`
+  - `go`
+
+### Examples
+
+```bash
+# Basic initialization
+paw init-settings-file
+
+# Custom server and language
+paw init-settings-file --server https://api.fusioncat.dev --language typescript
+
+# Local development server
+paw init-settings-file --server http://localhost:8080 --language go
+```
+
+## Settings File
+
+The command creates a `fcsettings.yaml` file in your current directory:
+
+```yaml
+syntax_version: 1
+server: https://api.fusioncat.dev
+code_generation:
+    output_folder: generated
+    language: go
+    class_suffix: FCModel
+```
+
+### File Location
+
+- **Created in**: Current working directory
+- **File name**: `fcsettings.yaml`
+- **Git**: Usually added to `.gitignore` for user-specific settings
+
+## Configuration Options
+
+### server
+
+The FusionCatalyst API server URL:
+- **Production**: `https://api.fusioncat.dev`
+- **Staging**: `https://staging-api.fusioncat.dev`
+- **Local**: `http://localhost:8080`
+
+### language
+
+Default language for code generation:
+- `typescript` - For Node.js, React, Angular, Vue
+- `python` - For Django, FastAPI, Flask
+- `java` - For Spring Boot, Micronaut
+- `go` - For Go backend applications
+
+
+## Workflows
+
+### New Project Setup
+
+```bash
+# 1. Initialize settings
+paw init-settings-file --language typescript
+
+# 2. Authenticate
+paw auth signin --email you@example.com --password yourpass
+
+# 3. Create project
+paw projects new --name "My API"
+
+```
+
+### Team Collaboration
+
+For team projects, each member:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/team/project
+
+# 2. Initialize their own settings
+cd project
+paw init-settings-file
+
+# 3. Authenticate with their credentials
+paw auth signin --email member@team.com --password theirpass
+```
+
+## Environment Variables
+
+Settings can be overridden with environment variables:
+
+```bash
+# Override server URL
+export FC_SERVER_URL="https://custom.fusioncat.dev"
+
+# Override default language
+export FC_LANGUAGE="python"
+
+# Set authentication token
+export FC_ACCESS_TOKEN="your-auth-token"
+```
+
+Priority order:
+1. Command line flags
+2. Environment variables
+3. Settings file
+4. Default values
+
+## Multiple Projects
+
+Managing multiple projects in different directories:
+
+```bash
+# Project A
+cd ~/projects/api-a
+paw init-settings-file
+
+# Project B
+cd ~/projects/api-b
+paw init-settings-file
+
+# Each directory has its own settings
+```
+
+## Best Practices
+
+### Git Configuration
+
+Add to `.gitignore`:
+```gitignore
+# Fusioncat settings
+fcsettings.yaml
+
+# But track a template
+fcsettings.yaml.example
+```
+
+Create `fcsettings.yaml.example`:
+```yaml
+syntax_version: 1
+server: https://api.fusioncat.dev
+code_generation:
+    output_folder: generated
+    language: go
+    class_suffix: FCModel
+```
+
+
+### Security
+
+1. **Never commit**: Authentication tokens or sensitive data
+2. **Use environment**: For CI/CD authentication
+3. **Personal settings**: Each developer has their own file
+
+### Team Setup
+
+Document in your README:
+```markdown
+## Setup
+
+1. Initialize your settings:
+   ```bash
+   paw init-settings-file  --language typescript
+   ```
+
+2. Authenticate:
+   ```bash
+   paw auth signin --email your@email.com --password yourpass --save-token
+   ```
+
+3. Generate code:
+   ```bash
+   paw codegen app --app-id "app-uuid"
+   ```
+```
+
+## Troubleshooting
+
+### Settings Not Found
+
+```bash
+Error: No settings file found
+```
+
+Solution:
+```bash
+# Create settings file
+paw init-settings-file
+```
+
+### Server Connection
+
+```bash
+Error: Cannot connect to server
+```
+
+Solution:
+```bash
+# Check server URL
+cat fcsettings.yaml
+
+# Update if needed
+paw init-settings-file --server https://api.fusioncat.dev
+```
+
+## Related Commands
+
+- [Authentication](./authentication) - Sign in after initializing
+- [Projects](./projects) - Create or connect to projects
+- [Code Generation](./codegen) - Use the configured language

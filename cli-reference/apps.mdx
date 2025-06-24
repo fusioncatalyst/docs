@@ -1,0 +1,181 @@
+---
+title: App Management
+description: Create and manage applications within projects
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# App Management Commands
+
+The `paw apps` commands allow you to create and manage applications within your Fusioncat projects.
+
+## Commands
+
+### apps list
+
+List all applications in a project.
+
+```bash
+paw apps list --project-id <id>
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+
+#### Examples
+
+```bash
+# List all apps in a project
+paw apps list --project-id "project-uuid"
+```
+
+### apps new
+
+Create a new application.
+
+```bash
+paw apps new --project-id <id> --name <name> [--description <description>]
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+- `--name` (required): Name of the application
+- `--description`: Description of the application
+
+#### Examples
+
+```bash
+# Create a simple app
+paw apps new --project-id "project-uuid" --name "Web Frontend"
+
+# Create an app with description
+paw apps new --project-id "project-uuid" --name "Mobile App" --description "React Native mobile application"
+```
+
+## Understanding Applications
+
+### What is an App?
+
+In Fusioncat, an app represents a consumer or producer of your API definitions. Apps can be:
+- Frontend applications (web, mobile)
+- Backend services
+- Microservices
+- Third-party integrations
+
+### App Configuration
+
+Each app can:
+- Generate code in different languages
+- Have its own configuration
+- Use specific schema versions
+- Define custom mappings
+
+### App Types
+
+While the CLI doesn't enforce app types, common patterns include:
+
+1. **Consumer Apps**: Use schemas to consume data
+   - Web frontends
+   - Mobile applications
+   - CLI tools
+
+2. **Producer Apps**: Generate data conforming to schemas
+   - API servers
+   - Event producers
+   - Data pipelines
+
+3. **Full-Stack Apps**: Both produce and consume
+   - Microservices
+   - API gateways
+   - Backend-for-frontend (BFF) services
+
+## Code Generation
+
+After creating an app, you can generate code for it:
+
+```bash
+# Generate TypeScript code
+paw codegen app --app-id "app-uuid" --language typescript
+
+# Generate Python code
+paw codegen app --app-id "app-uuid" --language python
+```
+
+See [Code Generation](./codegen) for more details.
+
+## Best Practices
+
+### Naming Apps
+
+- Use descriptive names that indicate the app's purpose
+- Include the platform/technology if relevant
+- Examples: "React Web App", "iOS Mobile App", "Order Processing Service"
+
+### App Organization
+
+1. **One app per deployable unit**: Each microservice, frontend, or mobile app should be separate
+2. **Shared schemas**: Apps in the same project share schema definitions
+3. **Version independence**: Each app can use different schema versions
+
+### Development Workflow
+
+1. Create project and schemas
+2. Create app for your implementation
+3. Generate initial code
+4. Implement business logic
+5. Regenerate when schemas change
+
+## Examples
+
+### Multi-App Project
+
+```bash
+# Create a project
+paw projects new --name "E-commerce Platform" --belongs-to user
+
+# Create schemas
+paw schemas new --project-id "project-uuid" --name "Product" --type jsonschema --schema-file ./product.json
+paw schemas new --project-id "project-uuid" --name "Order" --type jsonschema --schema-file ./order.json
+
+# Create multiple apps
+paw apps new --project-id "project-uuid" --name "Web Store" --description "Next.js web application"
+paw apps new --project-id "project-uuid" --name "Mobile Store" --description "React Native app"
+paw apps new --project-id "project-uuid" --name "Order Service" --description "Order processing microservice"
+paw apps new --project-id "project-uuid" --name "Admin Dashboard" --description "Internal admin tool"
+
+# Generate code for each app
+paw codegen app --app-id "web-app-uuid" --language typescript
+paw codegen app --app-id "mobile-app-uuid" --language typescript
+paw codegen app --app-id "order-service-uuid" --language python
+paw codegen app --app-id "admin-app-uuid" --language typescript
+```
+
+### Microservices Architecture
+
+```bash
+# Create apps for each microservice
+paw apps new --project-id "project-uuid" --name "User Service" --description "User management"
+paw apps new --project-id "project-uuid" --name "Product Service" --description "Product catalog"
+paw apps new --project-id "project-uuid" --name "Cart Service" --description "Shopping cart"
+paw apps new --project-id "project-uuid" --name "Payment Service" --description "Payment processing"
+
+# Each service can generate code in its preferred language
+paw codegen app --app-id "user-service-uuid" --language go
+paw codegen app --app-id "product-service-uuid" --language java
+paw codegen app --app-id "cart-service-uuid" --language python
+paw codegen app --app-id "payment-service-uuid" --language typescript
+```
+
+## Related Commands
+
+- [Projects](./projects) - Create projects to contain apps
+- [Schemas](./schemas) - Define data structures for apps
+- [Code Generation](./codegen) - Generate code for apps
+- [Messages](./messages) - Create messages that apps can use

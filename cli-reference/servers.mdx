@@ -1,0 +1,249 @@
+---
+title: Server Management
+description: Create and manage event-driven servers
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+
+# Server Management Commands
+
+The `paw servers` commands allow you to create and manage servers for event-driven architectures.
+
+## Commands
+
+### servers list
+
+List all servers in a project.
+
+```bash
+paw servers list --project-id <id>
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+
+#### Examples
+
+```bash
+# List all servers
+paw servers list --project-id "project-uuid"
+```
+
+### servers new
+
+Create a new server.
+
+```bash
+paw servers new --project-id <id> --name <name> --type <type> --description <description>
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+- `--name` (required): Name of the server
+- `--type` (required): Type of the server
+  - `async+kafka`: Apache Kafka server
+  - `async+amqp`: AMQP server (RabbitMQ, etc.)
+  - `async+webhook`: Webhook-based server
+- `--description` (required): Description of the server
+
+#### Examples
+
+```bash
+# Create a Kafka server
+paw servers new --project-id "project-uuid" --name "Event Stream" --type "async+kafka" --description "Main event streaming platform"
+
+# Create an AMQP server
+paw servers new --project-id "project-uuid" --name "Message Queue" --type "async+amqp" --description "RabbitMQ message broker"
+
+# Create a webhook server
+paw servers new --project-id "project-uuid" --name "Webhook Gateway" --type "async+webhook" --description "External webhook integrations"
+```
+
+## Server Types
+
+### async+kafka
+
+Apache Kafka servers for high-throughput event streaming:
+- **Use cases**: Event sourcing, log aggregation, real-time analytics
+- **Resources**: Topics with read/write modes
+- **Best for**: High volume, ordered events
+
+### async+amqp
+
+AMQP servers (RabbitMQ, Azure Service Bus, etc.):
+- **Use cases**: Task queues, RPC, pub/sub messaging
+- **Resources**: Exchanges, queues with various routing
+- **Best for**: Reliable delivery, complex routing
+
+### async+webhook
+
+Webhook-based servers for HTTP callbacks:
+- **Use cases**: Third-party integrations, notifications
+- **Resources**: Endpoints for sending/receiving webhooks
+- **Best for**: External system integration
+
+## Working with Servers
+
+### Server Architecture
+
+Servers act as the transport layer for your messages:
+
+```
+Project
+├── Schemas (data structures)
+├── Messages (concrete implementations)
+├── Servers (transport layer)
+│   ├── Kafka Server
+│   ├── AMQP Server
+│   └── Webhook Server
+└── Resources (topics, queues, endpoints)
+```
+
+### Server Resources
+
+After creating a server, add resources to it:
+
+```bash
+# Create Kafka server
+paw servers new --project-id "project-uuid" --name "Events" --type "async+kafka" --description "Event bus"
+
+# Add topics
+paw resources new --server-id "server-uuid" --name "user-events" --type topic --mode readwrite
+paw resources new --server-id "server-uuid" --name "order-events" --type topic --mode write
+```
+
+## Best Practices
+
+### Server Organization
+
+1. **Separate by Purpose**: Different servers for different use cases
+2. **Environment Parity**: Same server types across environments
+3. **Clear Naming**: Include purpose in server name
+
+### Multi-Server Architecture
+
+```bash
+# Event streaming for real-time data
+paw servers new --project-id "pid" --name "Stream Processing" --type "async+kafka" --description "Real-time event stream"
+
+# Task queue for background jobs
+paw servers new --project-id "pid" --name "Job Queue" --type "async+amqp" --description "Background job processing"
+
+# External integrations
+paw servers new --project-id "pid" --name "Partner Webhooks" --type "async+webhook" --description "Partner system callbacks"
+```
+
+### Server Selection Guide
+
+Choose based on your requirements:
+
+| Requirement | Recommended Server |
+|------------|-------------------|
+| High throughput | async+kafka |
+| Ordered events | async+kafka |
+| Complex routing | async+amqp |
+| Dead letter queues | async+amqp |
+| External systems | async+webhook |
+| Simple pub/sub | async+amqp or async+kafka |
+
+## Examples
+
+### E-commerce Event Architecture
+
+```bash
+# Create main event bus
+paw servers new --project-id "ecommerce-uuid" \
+  --name "Event Bus" \
+  --type "async+kafka" \
+  --description "Main event streaming platform"
+
+# Create task queue
+paw servers new --project-id "ecommerce-uuid" \
+  --name "Task Queue" \
+  --type "async+amqp" \
+  --description "Background job processing"
+
+# Create webhook server
+paw servers new --project-id "ecommerce-uuid" \
+  --name "Payment Webhooks" \
+  --type "async+webhook" \
+  --description "Payment provider callbacks"
+```
+
+### Services Communication
+
+```bash
+# Inter-service communication
+paw servers new --project-id "microservices-uuid" \
+  --name "Service Bus" \
+  --type "async+amqp" \
+  --description "Inter-service message bus"
+
+# Event store
+paw servers new --project-id "microservices-uuid" \
+  --name "Event Store" \
+  --type "async+kafka" \
+  --description "Event sourcing store"
+
+# External APIs
+paw servers new --project-id "microservices-uuid" \
+  --name "API Gateway Webhooks" \
+  --type "async+webhook" \
+  --description "External API callbacks"
+```
+
+### IoT Data Pipeline
+
+```bash
+# Device data ingestion
+paw servers new --project-id "iot-uuid" \
+  --name "Device Stream" \
+  --type "async+kafka" \
+  --description "IoT device data stream"
+
+# Command and control
+paw servers new --project-id "iot-uuid" \
+  --name "Device Commands" \
+  --type "async+amqp" \
+  --description "Device command queue"
+```
+
+## Server Configuration
+
+While the CLI creates server definitions, actual connection details and configuration are managed through:
+1. Environment-specific configuration files
+2. Generated code configuration
+3. Runtime environment variables
+
+Example generated code structure:
+```typescript
+// Generated configuration
+export const servers = {
+  eventBus: {
+    type: 'kafka',
+    name: 'Event Bus',
+    // Connection details from environment
+    brokers: process.env.KAFKA_BROKERS?.split(',') || ['localhost:9092'],
+  },
+  taskQueue: {
+    type: 'amqp',
+    name: 'Task Queue',
+    // Connection details from environment
+    url: process.env.AMQP_URL || 'amqp://localhost',
+  }
+};
+```
+
+## Related Commands
+
+- [Resources](./resources) - Create topics, queues, and endpoints
+- [Messages](./messages) - Define messages to send through servers
+- [Code Generation](./codegen) - Generate server connection code

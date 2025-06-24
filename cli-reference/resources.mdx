@@ -1,0 +1,281 @@
+---
+title: Resource Management
+description: Create and manage server resources like topics, queues, and endpoints
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+
+# Resource Management Commands
+
+The `paw resources` commands allow you to create and manage resources within servers, such as topics, queues, exchanges, and endpoints.
+
+## Commands
+
+### resources list
+
+List all resources in a server.
+
+```bash
+paw resources list --server-id <id>
+```
+
+#### Options
+
+- `--server-id` (required): The ID of the server
+
+#### Examples
+
+```bash
+# List all resources
+paw resources list --server-id "server-uuid"
+```
+
+### resources new
+
+Create a new resource.
+
+```bash
+paw resources new --server-id <id> --name <name> --type <type> --mode <mode> [--description <description>]
+```
+
+#### Options
+
+- `--server-id` (required): The ID of the server
+- `--name` (required): Name of the resource
+- `--type` (required): Type of the resource
+  - `topic`: Kafka topic or similar
+  - `exchange`: AMQP exchange
+  - `queue`: Message queue
+  - `table`: Data table
+  - `endpoint`: HTTP endpoint
+- `--mode` (required): Access mode for the resource
+  - `read`: Read-only access
+  - `write`: Write-only access
+  - `readwrite`: Full read/write access
+  - `bind`: Binding mode (for AMQP)
+- `--description`: Description of the resource
+
+#### Examples
+
+```bash
+# Create a Kafka topic
+paw resources new --server-id "kafka-server-uuid" --name "user-events" --type topic --mode readwrite
+
+# Create an AMQP exchange
+paw resources new --server-id "amqp-server-uuid" --name "order-exchange" --type exchange --mode write
+
+# Create a queue
+paw resources new --server-id "amqp-server-uuid" --name "order-processing" --type queue --mode read
+
+# Create a webhook endpoint
+paw resources new --server-id "webhook-server-uuid" --name "payment-callback" --type endpoint --mode write
+```
+
+## Resource Types by Server
+
+### Kafka Server Resources
+
+**Topics** - Event streams:
+```bash
+# Create topics for different event types
+paw resources new --server-id "kafka-uuid" --name "user.events" --type topic --mode readwrite
+paw resources new --server-id "kafka-uuid" --name "order.events" --type topic --mode write
+paw resources new --server-id "kafka-uuid" --name "inventory.events" --type topic --mode read
+```
+
+### AMQP Server Resources
+
+**Exchanges** - Message routing:
+```bash
+# Direct exchange
+paw resources new --server-id "amqp-uuid" --name "direct-exchange" --type exchange --mode write
+
+# Topic exchange
+paw resources new --server-id "amqp-uuid" --name "events.topic" --type exchange --mode write
+
+# Fanout exchange
+paw resources new --server-id "amqp-uuid" --name "broadcast.fanout" --type exchange --mode write
+```
+
+**Queues** - Message storage:
+```bash
+# Work queues
+paw resources new --server-id "amqp-uuid" --name "email-queue" --type queue --mode readwrite
+paw resources new --server-id "amqp-uuid" --name "sms-queue" --type queue --mode read
+
+# Dead letter queue
+paw resources new --server-id "amqp-uuid" --name "failed-messages-dlq" --type queue --mode readwrite
+```
+
+### Webhook Server Resources
+
+**Endpoints** - HTTP callbacks:
+```bash
+# Incoming webhooks
+paw resources new --server-id "webhook-uuid" --name "github-webhook" --type endpoint --mode read
+
+# Outgoing webhooks
+paw resources new --server-id "webhook-uuid" --name "slack-notification" --type endpoint --mode write
+```
+
+## Access Modes
+
+### read
+- Can consume/receive from the resource
+- For queues: dequeue messages
+- For topics: subscribe and consume
+- For endpoints: receive webhooks
+
+### write
+- Can produce/send to the resource
+- For queues: enqueue messages
+- For topics: publish events
+- For endpoints: send webhooks
+
+### readwrite
+- Full access to both read and write
+- Most common for internal services
+
+### bind
+- Special mode for AMQP
+- Bind queues to exchanges
+- Set up routing rules
+
+## Best Practices
+
+### Naming Conventions
+
+1. **Topics**: Use dot notation - `domain.entity.action`
+   ```bash
+   paw resources new --server-id "id" --name "user.profile.updated" --type topic --mode write
+   paw resources new --server-id "id" --name "order.payment.completed" --type topic --mode write
+   ```
+
+2. **Queues**: Use descriptive names with purpose
+   ```bash
+   paw resources new --server-id "id" --name "email-notification-queue" --type queue --mode read
+   paw resources new --server-id "id" --name "report-generation-queue" --type queue --mode readwrite
+   ```
+
+3. **Endpoints**: Include action and target
+   ```bash
+   paw resources new --server-id "id" --name "stripe-payment-webhook" --type endpoint --mode read
+   paw resources new --server-id "id" --name "customer-notification-endpoint" --type endpoint --mode write
+   ```
+
+### Resource Organization
+
+Group related resources:
+```bash
+# User domain resources
+paw resources new --server-id "kafka" --name "user.created" --type topic --mode write
+paw resources new --server-id "kafka" --name "user.updated" --type topic --mode write
+paw resources new --server-id "kafka" --name "user.deleted" --type topic --mode write
+
+# Order processing resources
+paw resources new --server-id "amqp" --name "order-validation-queue" --type queue --mode readwrite
+paw resources new --server-id "amqp" --name "order-fulfillment-queue" --type queue --mode readwrite
+paw resources new --server-id "amqp" --name "order-notification-queue" --type queue --mode write
+```
+
+### Access Control
+
+Principle of least privilege:
+```bash
+# Producer service - write only
+paw resources new --server-id "id" --name "events" --type topic --mode write
+
+# Consumer service - read only
+paw resources new --server-id "id" --name "events" --type topic --mode read
+
+# Processing service - full access
+paw resources new --server-id "id" --name "work-queue" --type queue --mode readwrite
+```
+
+## Examples
+
+### Event-Driven Microservices
+
+```bash
+# Create Kafka server
+paw servers new --project-id "proj" --name "Event Bus" --type "async+kafka" --description "Main event bus"
+
+# User service resources
+paw resources new --server-id "kafka" --name "user.events" --type topic --mode write --description "User service publishes"
+
+# Order service resources
+paw resources new --server-id "kafka" --name "user.events" --type topic --mode read --description "Order service subscribes"
+paw resources new --server-id "kafka" --name "order.events" --type topic --mode write --description "Order service publishes"
+
+# Notification service resources
+paw resources new --server-id "kafka" --name "order.events" --type topic --mode read --description "Notification service subscribes"
+```
+
+### Task Queue System
+
+```bash
+# Create AMQP server
+paw servers new --project-id "proj" --name "Task Queue" --type "async+amqp" --description "Background jobs"
+
+# Create exchange
+paw resources new --server-id "amqp" --name "tasks.direct" --type exchange --mode write
+
+# Create queues
+paw resources new --server-id "amqp" --name "email-tasks" --type queue --mode readwrite
+paw resources new --server-id "amqp" --name "report-tasks" --type queue --mode readwrite
+paw resources new --server-id "amqp" --name "cleanup-tasks" --type queue --mode readwrite
+
+# Dead letter queue
+paw resources new --server-id "amqp" --name "failed-tasks-dlq" --type queue --mode readwrite
+```
+
+### Webhook Integration
+
+```bash
+# Create webhook server
+paw servers new --project-id "proj" --name "Webhooks" --type "async+webhook" --description "External integrations"
+
+# Incoming webhooks
+paw resources new --server-id "webhook" --name "stripe-payment" --type endpoint --mode read
+paw resources new --server-id "webhook" --name "github-push" --type endpoint --mode read
+
+# Outgoing webhooks
+paw resources new --server-id "webhook" --name "slack-alert" --type endpoint --mode write
+paw resources new --server-id "webhook" --name "customer-notification" --type endpoint --mode write
+```
+
+## Generated Code
+
+Resources generate connection code:
+
+```typescript
+// Generated Kafka consumer
+export const userEventsConsumer = {
+  topic: 'user.events',
+  mode: 'read',
+  subscribe: async (handler: (event: UserEvent) => Promise<void>) => {
+    // Generated subscription code
+  }
+};
+
+// Generated AMQP producer
+export const taskQueueProducer = {
+  queue: 'email-tasks',
+  mode: 'write',
+  send: async (task: EmailTask) => {
+    // Generated send code
+  }
+};
+```
+
+## Related Commands
+
+- [Servers](./servers) - Create servers to contain resources
+- [Messages](./messages) - Define messages to send through resources
+- [Code Generation](./codegen) - Generate resource handling code

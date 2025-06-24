@@ -1,0 +1,322 @@
+---
+title: Schema Management
+description: Create and manage schemas with versioning support
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Schema Management Commands
+
+The `paw schemas` commands allow you to create, update, and manage schemas with full versioning support.
+
+## Commands
+
+### schemas list
+
+List all schemas in a project.
+
+```bash
+paw schemas list --project-id <id>
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+
+#### Examples
+
+```bash
+# List all schemas
+paw schemas list --project-id "project-uuid"
+```
+
+### schemas new
+
+Create a new schema.
+
+```bash
+paw schemas new --project-id <id> --name <name> --type <type> --schema-file <path> [--description <description>]
+```
+
+#### Options
+
+- `--project-id` (required): The ID of the project
+- `--name` (required): Name of the schema
+- `--type` (required): Type of the schema (e.g., `jsonschema`)
+- `--schema-file` (required): Path to the schema definition file
+- `--description`: Description of the schema
+
+#### Examples
+
+```bash
+# Create a JSON Schema
+paw schemas new --project-id "project-uuid" --name "User" --type jsonschema --schema-file ./schemas/user.json
+
+# Create with description
+paw schemas new --project-id "project-uuid" --name "Product" --type jsonschema --schema-file ./product.json --description "Product catalog schema"
+```
+
+### schemas update
+
+Update an existing schema (creates a new version).
+
+```bash
+paw schemas update --schema-id <id> --schema-file <path>
+```
+
+#### Options
+
+- `--schema-id` (required): The ID of the schema to update
+- `--schema-file` (required): Path to the updated schema definition
+
+#### Examples
+
+```bash
+# Update a schema
+paw schemas update --schema-id "schema-uuid" --schema-file ./schemas/user-v2.json
+```
+
+### schemas versions
+
+List all versions of a schema.
+
+```bash
+paw schemas versions --schema-id <id>
+```
+
+#### Options
+
+- `--schema-id` (required): The ID of the schema
+
+#### Examples
+
+```bash
+# List schema versions
+paw schemas versions --schema-id "schema-uuid"
+```
+
+### schemas get-version
+
+Get a specific version of a schema.
+
+```bash
+paw schemas get-version --schema-id <id> --version-id <version>
+```
+
+#### Options
+
+- `--schema-id` (required): The ID of the schema
+- `--version-id` (required): The version ID of the schema
+
+#### Examples
+
+```bash
+# Get specific version
+paw schemas get-version --schema-id "schema-uuid" --version-id "v1.0.0"
+```
+
+## Schema Types
+
+### JSON Schema
+
+The most common schema type. Define your data structures using JSON Schema specification.
+
+Example `user.json`:
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "User",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["id", "email", "name"]
+}
+```
+
+## Schema Versioning
+
+### How Versioning Works
+
+1. **Immutable Versions**: Each schema version is immutable once created
+2. **Automatic Versioning**: Updates create new versions automatically
+3. **Version History**: Full history is maintained for auditing
+4. **App Independence**: Different apps can use different versions
+
+### Version Management
+
+```bash
+# Create initial schema (v1)
+paw schemas new --project-id "project-uuid" --name "Order" --type jsonschema --schema-file ./order-v1.json
+
+# List schemas to get ID
+paw schemas list --project-id "project-uuid"
+
+# Update schema (creates v2)
+paw schemas update --schema-id "schema-uuid" --schema-file ./order-v2.json
+
+# View all versions
+paw schemas versions --schema-id "schema-uuid"
+
+# Get specific version
+paw schemas get-version --schema-id "schema-uuid" --version-id "version-uuid"
+```
+
+## Best Practices
+
+### Schema Design
+
+1. **Start Simple**: Begin with core fields, add complexity gradually
+2. **Use Standard Formats**: Leverage format validators (email, uuid, date-time)
+3. **Document Fields**: Use descriptions in your schemas
+4. **Required Fields**: Only mark truly required fields as required
+
+### Versioning Strategy
+
+1. **Backward Compatibility**: Try to maintain compatibility when possible
+2. **Semantic Versioning**: Use clear version numbering
+3. **Migration Path**: Document changes between versions
+4. **Deprecation**: Mark old fields as deprecated before removal
+
+### Schema Organization
+
+```
+schemas/
+├── v1/
+│   ├── user.json
+│   ├── product.json
+│   └── order.json
+├── v2/
+│   ├── user.json      # Added 'role' field
+│   ├── product.json   # No changes
+│   └── order.json     # Added 'status' enum
+└── README.md          # Document changes
+```
+
+## Examples
+
+### Evolution of a Schema
+
+```bash
+# Version 1: Basic user schema
+cat > user-v1.json << 'EOF'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"}
+  }
+}
+EOF
+
+paw schemas new --project-id "project-uuid" --name "User" --type jsonschema --schema-file user-v1.json
+
+# Version 2: Add email field
+cat > user-v2.json << 'EOF'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "email": {"type": "string", "format": "email"}
+  }
+}
+EOF
+
+paw schemas update --schema-id "schema-uuid" --schema-file user-v2.json
+
+# Version 3: Add required fields and validation
+cat > user-v3.json << 'EOF'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string", "format": "uuid"},
+    "name": {"type": "string", "minLength": 1},
+    "email": {"type": "string", "format": "email"}
+  },
+  "required": ["id", "email"]
+}
+EOF
+
+paw schemas update --schema-id "schema-uuid" --schema-file user-v3.json
+```
+
+### Complex Schema Example
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Order",
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "customer": {
+      "$ref": "#/definitions/customer"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/orderItem"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+    },
+    "total": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "definitions": {
+    "customer": {
+      "type": "object",
+      "properties": {
+        "customerId": {"type": "string"},
+        "name": {"type": "string"},
+        "email": {"type": "string", "format": "email"}
+      }
+    },
+    "orderItem": {
+      "type": "object",
+      "properties": {
+        "productId": {"type": "string"},
+        "quantity": {"type": "integer", "minimum": 1},
+        "price": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}
+```
+
+## Related Commands
+
+- [Messages](./messages) - Create messages based on schemas
+- [Code Generation](./codegen) - Generate code from schemas
+- [Projects](./projects) - Manage projects containing schemas

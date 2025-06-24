@@ -1,0 +1,133 @@
+---
+title: Authentication
+description: Authenticate with the Fusioncat API
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Authentication Commands
+
+The `paw auth` commands allow you to authenticate with the Fusioncat API.
+
+## Commands
+
+### auth signin
+
+Sign in to an existing Fusioncat account.
+
+```bash
+paw auth signin --email <email> --password <password>
+
+# This call will return an authentication token that can be used for subsequent API calls.
+# export FC_ACCESS_TOKEN="your-auth-token"
+```
+
+#### Options
+
+- `--email` (required): Your email address
+- `--password` (required): Your password
+
+#### Examples
+
+```bash
+# Sign in without saving token (one-time use)
+paw auth signin --email john@example.com --password mypassword
+
+# This call will return an authentication token that can be used for subsequent API calls.
+# export FC_ACCESS_TOKEN="your-auth-token"
+```
+
+### auth signup
+
+Create a new Fusioncat account.
+
+```bash
+paw auth signup --email <email> --password <password>
+
+# This call will return an authentication token that can be used for subsequent API calls.
+# export FC_ACCESS_TOKEN="your-auth-token"
+```
+
+#### Options
+
+- `--email` (required): Your email address
+- `--password` (required): Your password (must be secure)
+
+#### Examples
+
+```bash
+# Create new account and save token
+paw auth signup --email newuser@example.com --password securepassword
+export FC_ACCESS_TOKEN="your-auth-token"
+```
+
+### auth me
+
+Get information about the current authenticated user.
+
+```bash
+paw auth me
+```
+
+This command requires a valid authentication token in the `FC_ACCESS_TOKEN` environment variable.
+
+#### Examples
+
+```bash
+# Check current user
+paw auth me
+```
+
+## Token Management
+
+### Using Environment Variables
+
+```bash
+# View your current token
+echo $FC_ACCESS_TOKEN
+
+# Manually set a token
+export FC_ACCESS_TOKEN="your-auth-token"
+
+# Remove authentication
+unset FC_ACCESS_TOKEN
+```
+
+### Token Security
+
+- Tokens expire after a certain period (check with your administrator)
+- Never commit tokens to version control
+- Use environment-specific token management for CI/CD
+
+## Troubleshooting
+
+### Invalid Credentials
+
+If you receive an authentication error:
+1. Verify your email and password are correct
+2. Check if your account is active
+3. Ensure you're using the correct server URL
+
+### Token Expired
+
+If your token has expired:
+```bash
+# Sign in again to get a new token
+paw auth signin --email your@email.com --password yourpassword --save-token
+```
+
+### No Token Found
+
+If you see "authentication required" errors:
+```bash
+# Ensure you have a token set
+echo $FC_ACCESS_TOKEN
+
+# If empty, sign in again
+paw auth signin --email your@email.com --password yourpassword --save-token
+```

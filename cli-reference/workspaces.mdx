@@ -1,0 +1,156 @@
+---
+title: Workspace Management
+description: Create and manage workspaces for team collaboration
+---
+
+<Warning>
+    Fusioncat is currently in its alpha stage. The main API server is located at:
+    https://api.staging.fusioncatalyst.io/
+
+    Please note that breaking changes and bugs are to be expected, as the product is still under active development.
+</Warning>
+
+# Workspace Management Commands
+
+The `paw workspaces` commands allow you to create and manage workspaces for team collaboration.
+
+## Commands
+
+### workspaces list
+
+List all workspaces you have access to.
+
+```bash
+paw workspaces list
+```
+
+#### Examples
+
+```bash
+# List all workspaces
+paw workspaces list
+```
+
+### workspaces new
+
+Create a new workspace.
+
+```bash
+paw workspaces new --name <name> [--description <description>]
+```
+
+#### Options
+
+- `--name` (required): Workspace name
+- `--description`: Optional description of the workspace
+
+#### Examples
+
+```bash
+# Create a workspace
+paw workspaces new --name "Engineering Team" --description "Workspace for the engineering team"
+
+# Create a minimal workspace
+paw workspaces new --name "QA Team"
+```
+
+## Working with Workspaces
+
+### What are Workspaces?
+
+Workspaces are collaborative environments where teams can:
+- Share projects
+- Manage access permissions
+- Organize resources by team or department
+- Collaborate on API definitions
+
+### Workspace Projects
+
+After creating a workspace, you can create projects that belong to it:
+
+```bash
+# Create a workspace
+paw workspaces new --name "API Team"
+
+# List workspaces to get the ID
+paw workspaces list
+
+# Create a project in the workspace
+paw projects new --name "Shared APIs" --belongs-to workspace --workspace-id "workspace-uuid"
+```
+
+### Workspace Members
+
+Workspace membership and permissions are managed through the FusionCatalyst web interface or API. The CLI focuses on workspace and project creation.
+
+## Best Practices
+
+### Workspace Organization
+
+1. **One workspace per team**: Keep team resources together
+2. **Clear naming**: Use descriptive names that identify the team or purpose
+3. **Documentation**: Use descriptions to clarify workspace purpose
+
+### Workspace Structure Example
+
+```
+FintechEngineeringTeamWorkspace/
+├── PaymentProject
+├── AccountingProject
+└── NotificationsProject
+
+ComplianceEngineeringTeamWorkspace/
+├── LegalClaimsProject
+└── AntiMoneyLaunderingProject
+```
+
+### Access Control
+
+- Workspace owners can manage members
+- Members can create and modify projects
+- Project-level permissions override workspace permissions
+
+## Examples
+
+### Complete Team Setup
+
+```bash
+# 1. Create a workspace for your team
+paw workspaces new --name "Backend Team" --description "Backend engineering workspace"
+
+# 2. List workspaces to get the ID
+paw workspaces list
+
+# 3. Create a shared project
+paw projects new --name "Microservices APIs" --belongs-to workspace --workspace-id "workspace-uuid"
+
+# 4. Team members can now collaborate on the project
+paw apps new --project-id "project-uuid" --name "User Service" --description "User management service"
+```
+
+### Migration from User to Workspace
+
+If you have personal projects that should be shared:
+
+1. Export the project definition
+2. Create a new workspace
+3. Create a new project in the workspace
+4. Import the project definition
+
+```bash
+# Export existing project (through web interface or API)
+
+# Create workspace
+paw workspaces new --name "Team Workspace"
+
+# Create new project in workspace
+paw projects new --name "Migrated Project" --belongs-to workspace --workspace-id "workspace-uuid"
+
+# Import definition
+paw projects import --file ./export.json --project-id "new-project-uuid"
+```
+
+## Related Commands
+
+- [Projects](./projects) - Create projects within workspaces
+- [Authentication](./authentication) - Manage authentication for workspace access

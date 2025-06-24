@@ -1,6 +1,6 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: FusionCatalyst Documentation
+description: Build event-driven applications with schema-first development
 ---
 
 <img
@@ -14,58 +14,134 @@ description: "Welcome to the home of your new documentation"
   alt="Hero Dark"
 />
 
-## Setting up
+## Welcome to FusionCatalyst
 
-The first step to world-class documentation is setting up your editing environments.
+FusionCatalyst is a comprehensive platform for building event-driven, schema-first applications. With the Paw CLI, you can manage projects, define schemas, and generate type-safe code across multiple programming languages.
 
 <CardGroup cols={2}>
   <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Get your docs set up locally for easy development
+    Get up and running with FusionCatalyst in minutes
   </Card>
   <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
+    title="CLI Reference"
+    icon="terminal"
+    href="/cli-reference"
   >
-    Preview your changes before you push to make sure they're perfect
+    Complete reference for all Paw CLI commands
   </Card>
 </CardGroup>
 
-## Make it yours
-
-Update your docs to your brand and add valuable content for the best user conversion.
+## Key Features
 
 <CardGroup cols={2}>
   <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
+    title="Schema-First Development"
+    icon="diagram-project"
+    href="/cli-reference/schemas"
   >
-    Customize your docs to your company's colors and brands
+    Define your data structures once, use them everywhere with full versioning support
   </Card>
   <Card
-    title="Reference APIs"
+    title="Multi-Language Code Generation"
     icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
+    href="/cli-reference/codegen"
   >
-    Automatically generate endpoints from an OpenAPI spec
+    Generate type-safe code in TypeScript, Python, Java, and Go
   </Card>
   <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
+    title="Event-Driven Architecture"
+    icon="bolt"
+    href="/cli-reference/servers"
   >
-    Build interactive features and designs to guide your users
+    Build with Kafka, AMQP, and webhooks using a unified interface
   </Card>
   <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
+    title="Team Collaboration"
+    icon="users"
+    href="/cli-reference/workspaces"
   >
-    Check out our showcase of our favorite documentation
+    Work together with workspaces and shared projects
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+### 1. Install the Paw CLI
+
+```bash
+# Download the latest release
+curl -L https://github.com/fusioncatalyst/paw/releases/latest/download/paw_$(uname -s)_$(uname -m).tar.gz | tar xz
+
+# Move to your PATH
+sudo mv paw /usr/local/bin/
+```
+
+### 2. Initialize Your Project
+
+```bash
+# Create settings file
+paw init-settings-file --language typescript
+
+# Authenticate
+paw auth signin --email your@email.com --password yourpassword --save-token
+
+# Create a new project
+paw projects new --name "My API" --belongs-to user
+```
+
+### 3. Define Your Schemas
+
+```bash
+# Create a schema
+paw schemas new --project-id "your-project-id" \
+  --name "User" \
+  --type jsonschema \
+  --schema-file ./schemas/user.json
+```
+
+### 4. Generate Code
+
+```bash
+# Create an app
+paw apps new --project-id "your-project-id" --name "Backend API"
+
+# Generate TypeScript code
+paw codegen app --app-id "your-app-id" --language typescript
+```
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card
+    title="Concepts"
+    icon="lightbulb"
+    href="/essentials/concepts"
+  >
+    Understand the core concepts of FusionCatalyst
+  </Card>
+  <Card
+    title="Project Structure"
+    icon="folder-tree"
+    href="/essentials/project_file"
+  >
+    Learn how to organize your FusionCatalyst projects
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Explore the FusionCatalyst API
+  </Card>
+  <Card
+    title="Development Guide"
+    icon="code-branch"
+    href="/development"
+  >
+    Best practices for development with FusionCatalyst
   </Card>
 </CardGroup>
